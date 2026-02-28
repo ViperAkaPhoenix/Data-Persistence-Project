@@ -1,16 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
+    //public static MainManager Instance;
+    
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
 
+    public Text BestScoreText;
     public Text ScoreText;
+    public Text CurrentPlayer;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,7 +23,24 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+
+    /*
+    private void Awake()
+    {
+        // start of a new code. Destroy if the code wants to create a new instance if one already exists
+        
+        if (Instance != null)
+        {
+
+            Destroy(gameObject);
+            return;
+        }
+        
+        //Instance = this;
+        //DontDestroyOnLoad(gameObject);
+    }
+    */
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,10 +58,20 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        CurrentPlayer.text = GameManager.Instance.playerName;
+        BestScoreText.text = "Best Score : " + GameManager.Instance.highScorePlayerName + " : " + GameManager.Instance.highScore;
     }
 
     private void Update()
     {
+        
+        // return to main menu
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
+
         if (!m_Started)
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -52,6 +84,7 @@ public class MainManager : MonoBehaviour
                 Ball.transform.SetParent(null);
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
+
         }
         else if (m_GameOver)
         {
@@ -72,5 +105,18 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+
+        if(m_Points > GameManager.Instance.highScore)
+        {
+            Debug.Log("New high score! " + m_Points + " is more than " + GameManager.Instance.highScore);
+            GameManager.Instance.highScore = m_Points;
+            GameManager.Instance.highScorePlayerName = CurrentPlayer.text;
+            BestScoreText.text = "Best Score : " + GameManager.Instance.highScorePlayerName + " : " + GameManager.Instance.highScore;
+        }
+
     }
+
+
+    
 }
